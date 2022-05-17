@@ -351,14 +351,12 @@ def _get_phases_from_header(header):
         n_left = n_phases - len(phase_ids)
         phase_ids += [i for i in range(next_id, next_id + n_left)]
 
-    # If phases["point_group"] > 32 assume symmetry to be space group and convert to point group
-    if int(phases["point_group"][0]) > 32:
-        space_group = int(phases["point_group"][0])
+    # If phases["point_group"] is a number, assume symmetry to be space group and convert to point group international
+    # notation
+    my_symmetry = phases["point_group"][0]
+    if my_symmetry.isdigit():
+        space_group = int(my_symmetry)
         phases["point_group"] = _get_space_group_from_point_group(space_group)
-    warnings.warn(
-        f"Symmetry is interpreted as a point group, but input value is greater than 32. "
-        f"Input symmetry {phases['point_group'][0]} converted to space group {space_group}"
-    )
 
     return phase_ids, names, phases["point_group"], phases["lattice_constants"]
 
@@ -376,7 +374,7 @@ def _get_space_group_from_point_group(space_group):
     Returns
     -------
     point_group_name : string
-        point group name
+        point group name in international notation
 
     Notes
     -----
@@ -416,6 +414,11 @@ def _get_space_group_from_point_group(space_group):
     if space_group > 206: point_group_name = '432'
     if space_group > 214: point_group_name = '-43m'
     if space_group > 220: point_group_name = 'm-3m'
+
+    warnings.warn(
+        f"Input symmetry is a number and is interpreted as a space group. "
+        f"Input symmetry {space_group} converted to point group {point_group_name}"
+    )
 
     return point_group_name
 
